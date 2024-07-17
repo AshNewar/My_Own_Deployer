@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Status{
+  NOT_STARTED
+  QUEUED
+  IN_PROGRESS
+  READY
+  FAIL
+
+}
+
+model Project {
+  id              String        @id @default(uuid()) // Primary key with default UUID
+  name            String        // Project name
+  gitUrl          String        @map("git_url") // Maps to 'git_url' column in the database
+  subdomain       String        @map("sub_domain") // Maps to 'sub_domain' column in the database
+  customDomain    String        @map("custom_domain") // Maps to 'custom_domain' column in the database
+  createdAt       DateTime      @default(now()) // Timestamp of creation with default value of current time
+  updatedAt       DateTime @updatedAt // Timestamp of last update
+  deployments     Deployment[] // One-to-many relation with Deployment
+}
+
+
+model Deployment {
+  id              String   @id @default(uuid()) // Primary key with default UUID
+  projectId       String   @map(project_id)
+  status          Status   @default(NOT_STARTED)   
+  createdAt       DateTime @default(now()) // Timestamp of deployment creation
+  updatedAt       DateTime @updatedAt // Timestamp of last update
+  project         Project  @relation(fields: [projectId], references: [id])
+}
